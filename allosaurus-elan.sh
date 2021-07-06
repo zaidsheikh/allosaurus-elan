@@ -21,5 +21,5 @@ export LC_ALL="en_US.UTF-8"
 export PYTHONIOENCODING="utf-8"
 export PATH="$PATH:$FFMPEG_DIR"
 
-source activate allosaurus
+source activate allosaurus-elan
 exec $PYTHON3 ./allosaurus-elan.py

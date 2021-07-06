@@ -15,11 +15,6 @@ import sys
 import tempfile
 import unicodedata
 
-# import persephone.corpus
-# import persephone.corpus_reader
-# import persephone.experiment
-# import persephone.preprocess.feat_extract
-# import persephone.rnn_ctc
 from allosaurus.app import read_recognizer
 allosaurus_model = read_recognizer()
 
@@ -141,9 +136,9 @@ def to_sauk_orth_integrated(s):
 # Begin by tracking down the ffmpeg(1) executable that this recognizer will use
 # to process audio materials.  If ffmpeg(1) doesn't exist in the current path, 
 # exit now to save everyone some heartbreak later on.
-ffmpeg = shutil.which('ffmpeg')
-if not ffmpeg:
-    sys.exit(-1)
+# ffmpeg = shutil.which('ffmpeg')
+# if not ffmpeg:
+    # sys.exit(-1)
 
 # Read in all of the parameters that ELAN passes to this local recognizer on
 # standard input.
@@ -196,14 +191,14 @@ print("PROGRESS: 0.1 Loading annotations on input tier", flush = True)
 # mono 16KHz WAV, then load that temp file into pydub for easier exporting of
 # audio clips in the format that Allosaurus expects. 
 print("PROGRESS: 0.2 Converting source audio", flush = True)
-converted_audio_file = tempfile.NamedTemporaryFile(suffix = '.wav')
-subprocess.call([ffmpeg, '-y', '-v', '0', \
-    '-i', params['source'], \
-    '-ac', '1',
-    '-ar', '16000',
-    '-sample_fmt', 's16',
-    '-acodec', 'pcm_s16le', \
-    converted_audio_file.name])
+# converted_audio_file = tempfile.NamedTemporaryFile(suffix = '.wav')
+# subprocess.call([ffmpeg, '-y', '-v', '0', \
+    # '-i', params['source'], \
+    # '-ac', '1',
+    # '-ar', '16000',
+    # '-sample_fmt', 's16',
+    # '-acodec', 'pcm_s16le', \
+    # converted_audio_file.name])
 # converted_audio = pydub.AudioSegment.from_file(converted_audio_file, \
     # format = 'wav')
 
@@ -312,8 +307,10 @@ print("PROGRESS: 0.8 Creating Allosaurus model", flush = True)
 # /Users/chris/Desktop/CURRENT-PROJECTS/Persephone/persephone-tutorial/exp/5
 print("PROGRESS: 0.9 Transcribing clips", flush = True)
 # model.transcribe(os.path.join(params['exp_dir'], 'model', 'model_best.ckpt'))
-allosaurus_transcription = allosaurus_model.recognize(converted_audio_file.name)
-converted_audio_file.close()
+# allosaurus_transcription = allosaurus_model.recognize(params['source'])
+allosaurus_transcriptions = allosaurus_model.recognize(params['source'], timestamp=True).split('\n')
+# allosaurus_transcription = allosaurus_model.recognize(converted_audio_file.name)
+# converted_audio_file.close()
 
 # Now that transcription is finished, we can open 'EXPERIMENT_DIR/
 # transcriptions/hyps.txt' and parse out the phoneme strings, storing them
@@ -347,7 +344,32 @@ with open(params['output_tier'], 'w', encoding = 'utf-8') as output_tier:
     # Write document header.
     output_tier.write('<?xml version="1.0" encoding="UTF-8"?>\n')
     output_tier.write('<TIER xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:avatech-tier.xsd" columns="PersephoneOutput">\n')
-    output_tier.write('    <span start="%s" end="%s"><v>%s</v></span>\n' % ("0.0", "1.0", allosaurus_transcription))
+
+    start = allosaurus_transcriptions[0].split()[0]
+    end = str(float(allosaurus_transcriptions[-1].split()[0]) + float(allosaurus_transcriptions[-1].split()[1]))
+    allosaurus_transcription = ''
+    for transcription in allosaurus_transcriptions:
+        allosaurus_transcription = allosaurus_transcription + ' ' + transcription.split()[-1]
+    output_tier.write('    <span start="%s" end="%s"><v>%s</v></span>\n' % (start, end, allosaurus_transcription))
+
+    # start = allosaurus_transcriptions[0].split()[0]
+    # prev_start = start
+    # allosaurus_transcription = ''
+    # for transcription in allosaurus_transcriptions:
+        # _start, _length, _phone = transcription.split()
+        # if float(_start) - float(prev_start) > 0.1:
+            # output_tier.write('    <span start="%s" end="%s"><v>%s</v></span>\n' % (start, prev_start, allosaurus_transcription))
+            # start = _start
+            # allosaurus_transcription = _phone
+        # else:
+            # allosaurus_transcription = allosaurus_transcription + ' ' + _phone
+        # prev_start = _start
+
+    # prev_start, prev_length, prev_value = allosaurus_transcriptions[0].split()
+    # for annotation in allosaurus_transcriptions:
+        # start, length, value = annotation.split()
+        # end = str(float(start) + float(length))
+        # output_tier.write('    <span start="%s" end="%s"><v>%s</v></span>\n' % (start, end, value))
 
     # Write out annotations and recognized text (e.g., '<span start="17.492"
     # end="18.492"><v>OUTPUT</v></span>').  If we've been asked to, convert
