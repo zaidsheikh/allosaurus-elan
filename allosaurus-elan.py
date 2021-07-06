@@ -343,7 +343,7 @@ print("PROGRESS: 0.95 Preparing output tier", flush = True)
 with open(params['output_tier'], 'w', encoding = 'utf-8') as output_tier:
     # Write document header.
     output_tier.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-    output_tier.write('<TIER xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:avatech-tier.xsd" columns="PersephoneOutput">\n')
+    output_tier.write('<TIER xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:avatech-tier.xsd" columns="Allosaurus">\n')
 
     start = allosaurus_transcriptions[0].split()[0]
     end = str(float(allosaurus_transcriptions[-1].split()[0]) + float(allosaurus_transcriptions[-1].split()[1]))
