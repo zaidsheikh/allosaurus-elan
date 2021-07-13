@@ -19,7 +19,7 @@ from allosaurus.app import read_recognizer
 allosaurus_model = read_recognizer()
 
 
-# import pydub
+import pydub
 
 
 # The set of annotations (dicts) parsed out of the given ELAN tier.
@@ -133,12 +133,6 @@ def to_sauk_orth_integrated(s):
     return s.strip()
 
 
-# Begin by tracking down the ffmpeg(1) executable that this recognizer will use
-# to process audio materials.  If ffmpeg(1) doesn't exist in the current path, 
-# exit now to save everyone some heartbreak later on.
-# ffmpeg = shutil.which('ffmpeg')
-# if not ffmpeg:
-    # sys.exit(-1)
 
 # Read in all of the parameters that ELAN passes to this local recognizer on
 # standard input.
@@ -176,181 +170,92 @@ to_orth = None
 # With those parameters in hand, grab the 'input_tier' parameter, open that
 # XML document, and read in all of the annotation start times, end times,
 # and values.
+# Note: Tiers for the recognizers are in the AVATech tier format, not EAF
 print("PROGRESS: 0.1 Loading annotations on input tier", flush = True)
-# with open(params['input_tier'], 'r', encoding = 'utf-8') as input_tier:
-    # for line in input_tier:
-        # match = re.search(r'<span start="(.*?)" end="(.*?)"><v>(.*?)</v>', line)
-        # if match:
-            # annotation = { \
-                # 'start': int(float(match.group(1)) * 1000.0), \
-                # 'end' : int(float(match.group(2)) * 1000.0), \
-                # 'value' : match.group(3) }
-            # annotations.append(annotation)
+if os.path.exists(params.get('input_tier', '')):
+    with open(params['input_tier'], 'r', encoding = 'utf-8') as input_tier:
+        for line in input_tier:
+            match = re.search(r'<span start="(.*?)" end="(.*?)"><v>(.*?)</v>', line)
+            if match:
+                annotation = { \
+                    'start': int(float(match.group(1)) * 1000.0), \
+                    'end' : int(float(match.group(2)) * 1000.0), \
+                    'value' : match.group(3) }
+                annotations.append(annotation)
 
 # Then use ffmpeg(1) to convert the 'source' audio file into a temporary 16-bit
 # mono 16KHz WAV, then load that temp file into pydub for easier exporting of
 # audio clips in the format that Allosaurus expects. 
-print("PROGRESS: 0.2 Converting source audio", flush = True)
-# converted_audio_file = tempfile.NamedTemporaryFile(suffix = '.wav')
-# subprocess.call([ffmpeg, '-y', '-v', '0', \
-    # '-i', params['source'], \
-    # '-ac', '1',
-    # '-ar', '16000',
-    # '-sample_fmt', 's16',
-    # '-acodec', 'pcm_s16le', \
-    # converted_audio_file.name])
-# converted_audio = pydub.AudioSegment.from_file(converted_audio_file, \
-    # format = 'wav')
 
-# Create a directory for untranscribed features in 'feat' if needed.
-# untranscribed_dir = os.path.join(params['corpus_dir'], 'feat', 'untranscribed')
-# if not os.path.exists(untranscribed_dir):
-    # os.mkdir(untranscribed_dir)
+ffmpeg = shutil.which('ffmpeg')
+# TODO: fix this
+if False and ffmpeg and not params['source'].endswith('.wav'):
+    print("PROGRESS: 0.2 Converting source audio", flush = True)
+    converted_audio_file = tempfile.NamedTemporaryFile(suffix = '.wav')
+    subprocess.call([ffmpeg, '-y', '-v', '0', \
+        '-i', params['source'], \
+        '-ac', '1',
+        '-ar', '16000',
+        '-sample_fmt', 's16',
+        '-acodec', 'pcm_s16le', \
+        converted_audio_file.name])
+else:
+    # Assume it's in the right format, allosaurus will let us know if it isn't
+    converted_audio_file = open(params['source'], mode='rb')
+
+print(converted_audio_file.name)
+converted_audio = pydub.AudioSegment.from_file(converted_audio_file, format = 'wav')
 
 # Create a set of WAV clips for each of the annotations specified in
-# 'input_tier' in the format that Allosaurus expects, storing them under
-# temporary names in the 'wav' directory under the given corpus data
-# directory and making a list of their names (without the file extensions)
-# in 'untranscribed_prefixes.txt'.
-#
-# (When we reload the existing training corpus with these temporary audio
-#  clips saved in 'wav', Persephone will copy (and convert, if needed) each
-#  clip to 'feat', creating the necessary '.npy' files along the way.  We
-#  still need to create 'untranscribed_prefixes.txt' by hand (and, later, move
-#  the new clips and .npy files into 'feat/untranscribed/', while keeping
-#  copies in 'wav' at least until we've reloaded the corpus -- Persephone
-#  won't recognize them as untranscribed unless they're in both 'wav' *and*
-#  'feat/untranscribed'), but that's not  hard to do.
-# print("PROGRESS: 0.3 Creating temporary clips", flush = True)
-# prefix_to_annotation = {}
-# with open(os.path.join(params['corpus_dir'], 'untranscribed_prefixes.txt'), \
-          # 'w', encoding = 'utf-8') as untranscribed_prefixes:
-    # for annotation in annotations:
-        # # Save the audio clip in a named temporary file in the corpus 'feat/
-        # # untranscribed' directory. 
-        # annotation['clip'] = tempfile.NamedTemporaryFile(suffix = '.wav', \
-            # dir = untranscribed_dir)
-        # clip = converted_audio[annotation['start']:annotation['end']]
-        # clip.export(annotation['clip'], format = 'wav')
+# 'input_tier' in the format that Allosaurus expects
 
-        # # Add an entry for this temporary clip's file name to 
-        # # 'untranscribed_prefixes.txt'.
-        # annotation['clip_name'] = os.path.basename(annotation['clip'].name)
-        # annotation['clip_prefix'] = \
-            # os.path.splitext(annotation['clip_name'])[0]
-        # print(annotation['clip_prefix'], file = untranscribed_prefixes)
+print("PROGRESS: 0.3 Creating temporary clips", flush = True)
 
-        # # Make a symlink to this clip in the 'wav' directory. (Persephone
-        # # requires that the WAV files live in both locations)
-        # annotation['wav_symlink'] = os.path.join(params['corpus_dir'], \
-            # 'wav', annotation['clip_name'])
-        # os.symlink(annotation['clip'].name, annotation['wav_symlink'])
+# TODO: use tempfile.TemporaryDirectory()
+tmp_dir = tempfile.mkdtemp(prefix="allosaurus-elan-")
+print(tmp_dir)
 
-        # # Map from this prefix to the corresponding annotation (for quick
-        # # lookups later on when parsing out recognized text)
-        # prefix_to_annotation[annotation['clip_prefix']] = annotation
+for annotation in annotations:
+    annotation['clip'] = tempfile.NamedTemporaryFile(suffix = '.wav', dir = tmp_dir, delete=False)
+    clip = converted_audio[annotation['start']:annotation['end']]
+    clip.export(annotation['clip'], format = 'wav')
 
-# Now that clips in the appropriate format have been created, close (and
-# thereby delete) the temporary converted source recording.  This isn't
-# strictly necessary, but it doesn't hurt.
 
-# Now prepare input features for all of the clips in 'feat/untranscribed'.
-# Having these features in place before loading the corpus convinces
-# Persephone that it doesn't need to reprocess the entire corpus, lowering
-# the overall time required for transcription.
-print("PROGRESS: 0.4 Extracting features from clips", flush = True)
-# persephone.preprocess.feat_extract.from_dir(untranscribed_dir, \
-    # params['feat_type'])
-
-# If needed, make symlinks to both the clip *and* the corresponding input
-# feature ('.npy') in the 'feat' directory, as well.
-print("PROGRESS: 0.5 Creating temporary symlinks to clips and features", \
-      flush = True)
-# for annotation in annotations:
-    # annotation['feat_symlink'] = os.path.join(params['corpus_dir'], \
-        # 'feat', annotation['clip_name'])
-    # os.symlink(annotation['clip'].name, annotation['feat_symlink'])
-
-    # feat_fname = '%s.%s.npy' % (annotation['clip_prefix'], params['feat_type'])
-
-    # annotation['npy'] = os.path.join(untranscribed_dir, feat_fname)
-    # annotation['npy_symlink'] = os.path.join(params['corpus_dir'], 'feat', \
-        # feat_fname)
-    # os.symlink(annotation['npy'], annotation['npy_symlink'])
-
-# Now that all of the clips and '.npy' files are where they need to be for
-# Persephone to find them and an 'untranscribed_prefixes.txt' file is in place,
-# load the corpus.  Persephone should now find all of these files and know to
-# treat them as untranscribed segments.
-print("PROGRESS: 0.6 Loading corpus into Allosaurus", flush = True)
-# corp = persephone.corpus.Corpus(feat_type = params['feat_type'], \
-    # label_type = params['label_type'], tgt_dir = params['corpus_dir'])
-
-# Then load the Persephone model specified in the 'persephone_model' parameter,
-# then use it to start transcribing the clips created above (ideally reporting
-# our progress via messages on stdout, though that doesn't look to be possible
-# here with the current API.  Sigh...)
-print("PROGRESS: 0.7 Creating temporary experiment directory", flush = True)
-# temp_dir = tempfile.TemporaryDirectory()
-# new_experiment_dir = persephone.experiment.prep_exp_dir(temp_dir.name)
-
-print("PROGRESS: 0.8 Creating Allosaurus model", flush = True)
-# corp_reader = persephone.corpus_reader.CorpusReader(corp, \
-    # num_train = model_parameters['num_train'], \
-    # batch_size = model_parameters['batch_size'])
-
-# model = persephone.rnn_ctc.Model(new_experiment_dir, corp_reader, \
-    # num_layers = model_parameters['num_layers'], \
-    # hidden_size = model_parameters['hidden_size'])
-
-# 'exp_dir' (e.g., '5') - experiment dir of trained model to apply
-# /Users/chris/Desktop/CURRENT-PROJECTS/Persephone/persephone-tutorial/exp/5
 print("PROGRESS: 0.9 Transcribing clips", flush = True)
-# model.transcribe(os.path.join(params['exp_dir'], 'model', 'model_best.ckpt'))
 # allosaurus_transcription = allosaurus_model.recognize(params['source'])
-allosaurus_transcriptions = allosaurus_model.recognize(params['source'], timestamp=True).split('\n')
-# allosaurus_transcription = allosaurus_model.recognize(converted_audio_file.name)
-# converted_audio_file.close()
+if not annotations:
+    allosaurus_transcriptions = allosaurus_model.recognize(converted_audio_file.name, timestamp=True).split('\n')
+else:
+    for annotation in annotations:
+        annotation['transcription'] = allosaurus_model.recognize(annotation['clip'].name)
+        # print(annotations['transcription'])
 
-# Now that transcription is finished, we can open 'EXPERIMENT_DIR/
-# transcriptions/hyps.txt' and parse out the phoneme strings, storing them
-# under the corresponding annotation.
-# with open(os.path.join(new_experiment_dir, 'transcriptions', 'hyps.txt'), \
-    # 'r', encoding = 'utf-8') as recognized_text_file:
-    # while True:
-        # # Read the file in three-line blocks.
-        # prefix = recognized_text_file.readline()
-        # if not prefix:
-            # break
+converted_audio_file.close()
 
-        # # Strip off the path and '.{FEAT}.npy' file extensions to get back
-        # # to a usable prefix.
-        # prefix = os.path.basename(prefix)
-        # prefix = prefix[:prefix.index('.')]
-
-        # text = recognized_text_file.readline()
-        # recognized_text_file.readline()  # skip empty third line
-
-        # # Find the corresponding annotation and stores the recognized text
-        # # in it under 'value'.
-        # annotation = prefix_to_annotation[prefix]
-        # annotation['value'] = text.strip()
 
 # Then open 'output_tier' for writing, and return all of the new phoneme
-# strings produced by Allosaurus as the contents of <span> elements (see
-# below).
+# strings produced by Allosaurus as the contents of <span> elements
+
 print("PROGRESS: 0.95 Preparing output tier", flush = True)
 with open(params['output_tier'], 'w', encoding = 'utf-8') as output_tier:
     # Write document header.
     output_tier.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-    output_tier.write('<TIER xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="file:avatech-tier.xsd" columns="Allosaurus">\n')
+    output_tier.write('<TIER xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
+                      'xsi:noNamespaceSchemaLocation="file:avatech-tier.xsd" columns="Allosaurus">\n')
 
-    start = allosaurus_transcriptions[0].split()[0]
-    end = str(float(allosaurus_transcriptions[-1].split()[0]) + float(allosaurus_transcriptions[-1].split()[1]))
-    allosaurus_transcription = ''
-    for transcription in allosaurus_transcriptions:
-        allosaurus_transcription = allosaurus_transcription + ' ' + transcription.split()[-1]
-    output_tier.write('    <span start="%s" end="%s"><v>%s</v></span>\n' % (start, end, allosaurus_transcription))
+    if not annotations:
+        start = allosaurus_transcriptions[0].split()[0]
+        end = str(float(allosaurus_transcriptions[-1].split()[0]) +
+                  float(allosaurus_transcriptions[-1].split()[1]))
+        allosaurus_transcription = ''
+        for transcription in allosaurus_transcriptions:
+            allosaurus_transcription = allosaurus_transcription + ' ' + transcription.split()[-1]
+        output_tier.write('    <span start="%s" end="%s"><v>%s</v></span>\n' %
+                          (start, end, allosaurus_transcription))
+    else:
+        for annotation in annotations:
+            output_tier.write('    <span start="%s" end="%s"><v>%s</v></span>\n' %
+                              (annotation['start'], annotation['end'], annotation['transcription']))
 
     # start = allosaurus_transcriptions[0].split()[0]
     # prev_start = start
@@ -370,22 +275,6 @@ with open(params['output_tier'], 'w', encoding = 'utf-8') as output_tier:
         # start, length, value = annotation.split()
         # end = str(float(start) + float(length))
         # output_tier.write('    <span start="%s" end="%s"><v>%s</v></span>\n' % (start, end, value))
-
-    # Write out annotations and recognized text (e.g., '<span start="17.492"
-    # end="18.492"><v>OUTPUT</v></span>').  If we've been asked to, convert
-    # from Persephone's phoneme strings back into the given language's
-    # orthography.
-    if to_orth:
-        for annotation in annotations:
-            output_tier.write(\
-                '    <span start="%s" end="%s"><v>%s</v></span>\n' %\
-                (annotation['start'], annotation['end'], \
-                 to_orth(annotation['value'])))
-    else:
-        for annotation in annotations:
-            output_tier.write(\
-                '    <span start="%s" end="%s"><v>%s</v></span>\n' %\
-                (annotation['start'], annotation['end'], annotation['value']))
 
     output_tier.write('</TIER>\n')
 

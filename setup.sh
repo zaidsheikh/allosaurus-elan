@@ -12,4 +12,4 @@ cp -a $script_dir $elan_extensions_dir
 # setup allosaurus
 conda create --yes --name allosaurus-elan python=3.7
 source activate allosaurus-elan
-pip install allosaurus
+pip install -r requirements.txt
