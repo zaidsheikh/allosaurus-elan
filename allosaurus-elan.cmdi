@@ -43,12 +43,12 @@
                 mimetypes="audio/x-wav"
                 info="Input audio file (WAV)">source</input>
 
-        <!--<input level="basic" type="tier"-->
-                <!--mimetypes="text/plain"-->
-                <!--info="Input tier to process">input_tier</input>-->
+        <input level="basic" type="tier" default="none"
+                mimetypes="text/plain"
+                info="Input tier to process">input_tier</input>
 
         <!--<input level="basic" type="auxiliary" default="/tmp/" -->
-                <!--info="Allosaurus corpus directory">corpus_dir</input>-->
+                <!--info="Allosaurus tmp directory">corpus_dir</input>-->
 
         <!--<input level="basic" type="auxiliary" default="/tmp/" -->
                 <!--info="Allosaurus source experiment directory">exp_dir</input>-->
