@@ -25,6 +25,11 @@ Switch to the "Recognizers" tab and then select "Allosaurus Phoneme Recognizer" 
 
 ![image](https://user-images.githubusercontent.com/2358298/124541645-da0adf80-ddef-11eb-8bb6-4a26713545a6.png)
 
+If the audio file is long, you can use an existing audio segmenter (for example, the "Fine audio segmentation" recognizer in ELAN) to segment the audio into utterance level segments first. Once that's done, before you run the "Allosaurus Phoneme Recognizer", in the "Parameters" section set the input tier to the audio segmenter output tier generated previously (for example: "Fine_Segmentation" tier).
+
+![fine_segmentation_input_tier](https://user-images.githubusercontent.com/2358298/126795420-00efc527-d2b8-40c2-8122-0cb37c4c1cfb.png)
+
+
 ### Upcoming changes (pending testing)
 
 1. Call Allosaurus running on a remote [CMU Linguistic Annotation Backend](https://github.com/neulab/cmulab) server instead of installing the Allosaurus locally
