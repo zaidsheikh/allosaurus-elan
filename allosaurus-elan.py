@@ -15,11 +15,14 @@ import sys
 import tempfile
 import unicodedata
 
-from allosaurus.app import read_recognizer
-allosaurus_model = read_recognizer()
+# from allosaurus.app import read_recognizer
+# allosaurus_model = read_recognizer()
 
 
 import pydub
+import requests
+import json
+import traceback
 
 
 # The set of annotations (dicts) parsed out of the given ELAN tier.
@@ -205,6 +208,8 @@ else:
 
 print(converted_audio_file.name)
 converted_audio = pydub.AudioSegment.from_file(converted_audio_file, format = 'wav')
+if not annotations:
+    annotations.append({'start': 0, 'end': len(converted_audio), 'value': ""})
 
 # Create a set of WAV clips for each of the annotations specified in
 # 'input_tier' in the format that Allosaurus expects
@@ -224,10 +229,22 @@ for annotation in annotations:
 print("PROGRESS: 0.9 Transcribing clips", flush = True)
 # allosaurus_transcription = allosaurus_model.recognize(params['source'])
 if not annotations:
-    allosaurus_transcriptions = allosaurus_model.recognize(converted_audio_file.name, timestamp=True).split('\n')
+    # allosaurus_transcriptions = allosaurus_model.recognize(converted_audio_file.name, timestamp=True).split('\n')
+    pass
 else:
     for annotation in annotations:
-        annotation['transcription'] = allosaurus_model.recognize(annotation['clip'].name)
+        # annotation['transcription'] = allosaurus_model.recognize(annotation['clip'].name)
+        with open(annotation['clip'].name,'rb') as audio_file:
+            files = {'file': audio_file}
+            # url="http://localhost:8000/annotator/segment/1/annotate/2/"
+            url = params['server_url'].rstrip('/') + "/annotator/segment/1/annotate/2/"
+            try:
+                r = requests.post(url, files=files, data={})
+            except:
+                sys.stderr.write("Error connecting to backend server " + params['server_url'] + "\n")
+                traceback.print_exc()
+            print("Response from CMULAB server " + params['server_url'] + ": " + r.text)
+            annotation['transcription'] = json.loads(r.text)["transcription"]
         # print(annotations['transcription'])
 
 converted_audio_file.close()

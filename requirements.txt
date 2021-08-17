@@ -1,2 +1,2 @@
-allosaurus
 pydub
+requests

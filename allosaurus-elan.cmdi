@@ -63,6 +63,8 @@
             <!--<textparam level="basic" -->
                 <!--convoc="Tsuut'ina Sauk-Separate Sauk-Circumflex none" default="Tsuut'ina"-->
                 <!--info="Convert Allosaurus phoneme strings into this orthography">orthography</textparam>-->
+                <textparam level="basic" default="http://rabat.sp.cs.cmu.edu:8088/"
+                info="CMULAB backend server URL">server_url</textparam>
 
             <output level="basic" type="tier" optional="false"
                 mimetypes="text/xml"
