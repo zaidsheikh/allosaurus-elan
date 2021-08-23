@@ -80,69 +80,6 @@ def cleanup():
     # All other temporary files and directories created by 'tempfile' methods
     # will be removed automatically.
 
-def to_tsuutina_orth(s):
-    """ Convert Persephone phoneme strings to Tsuut'ina orthographic forms. """
-    # Remove utterance-initial glottal stops (not part of the current
-    # orthography).
-    s = re.sub(r'^ʔ', '', s)
-
-    # Turn two-vowel sequences with contour tones ("aa HM") into simpler
-    # sequences of vowels followed by tones ("a H a M")
-    s = re.sub(r'([aiouAIOU])([aiouAIOU]) ([LMH])([LMH])', '\\1 \\3 \\2 \\4', s)
-
-    # Turn long vowels with level tones ("aa H") into simpler sequences of
-    # vowels followe by tones  ("a H a H")
-    s = re.sub(r'([aiouAIOU])([aiouAIOU]) ([LMH])( |$)', \
-        '\\1 \\3 \\2 \\3\\4', s)
-
-    # Temporarily turn tone markers into combining diacritics.
-    s = s.replace(' H', u'\u0301')
-    s = s.replace(' M', '')
-    s = s.replace(' L', u'\u0300')
-
-    # Remove all spaces between phonemes.
-    s = s.replace(' ', '')
-
-    # Turn vowel-plus-combining-accent combinations into single, composed
-    # characters.
-    s = unicodedata.normalize('NFC', s)
-    return s
-
-def to_sauk_orth_separate(s):
-    """ Convert Persephone phoneme strings from vowel plus length to regular
-        Sauk orthographic forms (where circumflexes mark vowel length."""
-
-    # Remove short vowel markers altogether.
-    s = s.replace(' S', '')
-
-    # Turn long vowel markers into combining circumflexes, then make sure
-    # we never end up with more than one circumflex in a row.
-    s = re.sub(' L', u'\N{COMBINING CIRCUMFLEX ACCENT}', s)
-    s = re.sub('\N{COMBINING CIRCUMFLEX ACCENT}+', \
-        '\N{COMBINING CIRCUMFLEX ACCENT}', s)
-
-    return to_sauk_orth_integrated(s)
-
-def to_sauk_orth_integrated(s):
-    """ Convert Persephone phoneme strings that use circumflex accents to mark
-        vowel length back into the regular Sauk orthogrphy. """
-
-    # Remove all spaces between phonemes.
-    s = s.replace(' ', '')
-
-    # Re-expand filled pauses and interjections.
-    s = s.replace('UHHUH', ' uh-huh, ')
-    s = s.replace('MHM', ' mhm, ')
-    s = s.replace('UH', ' uh, ')
-    s = s.replace('UM', ' um, ')
-
-    # Turn vowel-plus-combining-accent combinations into single, composed
-    # characters.
-    s = unicodedata.normalize('NFC', s)
-    return s.strip()
-
-
-
 # Read in all of the parameters that ELAN passes to this local recognizer on
 # standard input.
 for line in sys.stdin:
@@ -150,33 +87,8 @@ for line in sys.stdin:
     if match:
         params[match.group(1)] = match.group(2).strip()
 
-# Prepare to convert Persephone phoneme strings back into the given community
-# orthography, if requested.
-#
-# TODO: Fix this to look at the label type (e.g., 'phonemes_len_separate'),
-# then automatically choose the right orthographic conversion routine. That
-# should let us keep the language list to language names only. FIXME
-to_orth = None
-# if 'orthography' in params:
-    # if params['orthography'] == 'Tsuut&apos;ina':
-        # to_orth = to_tsuutina_orth
-    # elif params['orthography'] == 'Sauk-Separate':
-        # to_orth = to_sauk_orth_separate
-    # elif params['orthography'] == 'Sauk-Circumflex':
-        # to_orth = to_sauk_orth_integrated
 
-# Read in the parameters that were originally used to read the training corpus
-# and configure the model that will be used for transcription here.
-# with open(os.path.join(params['exp_dir'], 'model_description.txt'), 'r', \
-     # encoding = 'utf-8') as f:
-    # for line in f:
-        # match = re.search(\
-            # r'(num_train|batch_size|num_layers|hidden_size)=(\d+)', line)
-        # if match:
-            # model_parameters[match.group(1)] = int(match.group(2))
-
-
-# With those parameters in hand, grab the 'input_tier' parameter, open that
+# grab the 'input_tier' parameter, open that
 # XML document, and read in all of the annotation start times, end times,
 # and values.
 # Note: Tiers for the recognizers are in the AVATech tier format, not EAF
