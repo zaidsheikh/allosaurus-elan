@@ -23,6 +23,8 @@ import pydub
 import requests
 import json
 import traceback
+import tkinter as tk
+from tkinter import simpledialog
 
 
 # The set of annotations (dicts) parsed out of the given ELAN tier.
@@ -36,6 +38,10 @@ params = {}
 # train the Allosaurus model being used for transcription here.
 model_parameters = {}
 
+# root = tk.Tk()
+# root.withdraw()
+# user_inp = simpledialog.askstring(title="Credentials", prompt="Username:")
+# print("Hello", user_inp)
 
 @atexit.register
 def cleanup():
@@ -191,7 +197,7 @@ if os.path.exists(params.get('input_tier', '')):
 # audio clips in the format that Allosaurus expects. 
 
 ffmpeg = shutil.which('ffmpeg')
-# TODO: fix this
+# TODO: move this to the backend
 if False and ffmpeg and not params['source'].endswith('.wav'):
     print("PROGRESS: 0.2 Converting source audio", flush = True)
     converted_audio_file = tempfile.NamedTemporaryFile(suffix = '.wav')

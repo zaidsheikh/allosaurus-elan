@@ -11,10 +11,10 @@ wget https://www.mpi.nl/tools/elan/ELAN_6-1_linux.tar.gz
 tar xzf ELAN_6-1_linux.tar.gz
 ```
 
-Run setup.sh to copy the code to ELAN extensions dir
+Copy this repo to ELAN's extensions dir/
 ```
+cd ELAN_6-1/lib/app/extensions/
 git clone https://github.com/zaidsheikh/allosaurus-elan
-allosaurus-elan/setup.sh ELAN_6-1/lib/app/extensions/
 ```
 
 Start ELAN with the provided test audio file
@@ -31,4 +31,3 @@ If the audio file is long, you can use an existing audio segmenter (for example,
 
 
 This plugin calls Allosaurus running on a remote [CMU Linguistic Annotation Backend](https://github.com/neulab/cmulab) server
-
