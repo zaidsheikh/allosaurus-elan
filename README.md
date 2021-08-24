@@ -5,17 +5,21 @@
 This is very early code, still a work-in-progress, let us know if you notice bugs or have any feedback or feature requests.
 
 ### Instructions
-Download and extract ELAN
+
+Install [Python 3](https://www.python.org/downloads/) if it isn't already installed.
+
+Download and extract ELAN:
 ```
 wget https://www.mpi.nl/tools/elan/ELAN_6-1_linux.tar.gz
 tar xzf ELAN_6-1_linux.tar.gz
 ```
 
-Run setup.sh to copy the code to ELAN extensions dir and create a conda environment for allosaurus
+And copy this repo to ELAN's extensions dir/
 ```
+cd ELAN_6-1/lib/app/extensions/
 git clone https://github.com/zaidsheikh/allosaurus-elan
-allosaurus-elan/setup.sh ELAN_6-1/lib/app/extensions/
 ```
+or you can just download this [zip file](https://github.com/zaidsheikh/allosaurus-elan/archive/refs/heads/dev.zip) and extract it in ELAN's extensions dir
 
 Start ELAN with the provided test audio file
 
@@ -30,8 +34,4 @@ If the audio file is long, you can use an existing audio segmenter (for example,
 ![fine_segmentation_input_tier](https://user-images.githubusercontent.com/2358298/126795420-00efc527-d2b8-40c2-8122-0cb37c4c1cfb.png)
 
 
-### Upcoming changes (pending testing)
-
-1. Call Allosaurus running on a remote [CMU Linguistic Annotation Backend](https://github.com/neulab/cmulab) server instead of installing the Allosaurus locally
-2. Align phoneme transcriptions better in the timeline viewer using approximate timestamps provided by Allosaurus
-
+This plugin calls Allosaurus running on a remote [CMU Linguistic Annotation Backend](https://github.com/neulab/cmulab) server
