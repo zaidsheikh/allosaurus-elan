@@ -5,17 +5,21 @@
 This is very early code, still a work-in-progress, let us know if you notice bugs or have any feedback or feature requests.
 
 ### Instructions
-Download and extract ELAN
+
+Install [Python 3](https://www.python.org/downloads/) if it isn't already installed.
+
+Download and extract ELAN:
 ```
 wget https://www.mpi.nl/tools/elan/ELAN_6-1_linux.tar.gz
 tar xzf ELAN_6-1_linux.tar.gz
 ```
 
-Copy this repo to ELAN's extensions dir/
+And copy this repo to ELAN's extensions dir/
 ```
 cd ELAN_6-1/lib/app/extensions/
 git clone https://github.com/zaidsheikh/allosaurus-elan
 ```
+or you can just download this [zip file](https://github.com/zaidsheikh/allosaurus-elan/archive/refs/heads/dev.zip) and extract it in ELAN's extensions dir
 
 Start ELAN with the provided test audio file
 
