@@ -4,22 +4,35 @@
 
 This is very early code, still a work-in-progress, let us know if you notice bugs or have any feedback or feature requests.
 
+### Setup
+
+#### Linux
+
+1. Download the latest version of ELAN from [here](https://archive.mpi.nl/tla/elan/download) and install it:
+```
+wget https://www.mpi.nl/tools/elan/ELAN-XX_linux.tar.gz
+tar xzf ELAN-XX_linux.tar.gz
+```
+
+2. [Download a copy of this repo](https://github.com/zaidsheikh/allosaurus-elan/archive/refs/heads/dev.zip) and unzip it. Copy the `allosaurus-elan-dev/` folder into ELAN's extensions dir (`ELAN-XX/lib/app/extensions/`).
+
+#### Mac
+
+1. If ELAN is not already installed on your Mac, [download the latest .dmg installer](https://archive.mpi.nl/tla/elan/download) and install it. It should be installed in the `/Applications/ELAN_XX` directory, where `XX` is the name of the version.
+2. Download this [zip file](https://github.com/zaidsheikh/allosaurus-elan/archive/refs/heads/dev.zip) and unzip it. You should see a folder named `allosaurus-elan-dev` containing the contents of this repo.
+3. Right-click `ELAN_XX` and click "Show Package Contents", then copy your `allosaurus-elan-dev` folder into `ELAN_XX.app/Contents/app/extensions`.
+
+
+#### Windows
+
+1. Download the latest version of ELAN from [here](https://archive.mpi.nl/tla/elan/download) and install it.
+2. [Download a copy of this repo](https://github.com/zaidsheikh/allosaurus-elan/archive/refs/heads/dev.zip) and unzip it. Copy the `allosaurus-elan-dev/` folder into ELAN's extensions dir (`ELAN-XX/app/extensions/`).
+3. Install [Python 3](https://www.python.org/downloads/) if it isn't already installed.
+
+
+
 ### Instructions
 
-Install [Python 3](https://www.python.org/downloads/) if it isn't already installed.
-
-Download and extract ELAN:
-```
-wget https://www.mpi.nl/tools/elan/ELAN_6-1_linux.tar.gz
-tar xzf ELAN_6-1_linux.tar.gz
-```
-
-And copy this repo to ELAN's extensions dir/
-```
-cd ELAN_6-1/lib/app/extensions/
-git clone https://github.com/zaidsheikh/allosaurus-elan
-```
-or you can just download this [zip file](https://github.com/zaidsheikh/allosaurus-elan/archive/refs/heads/dev.zip) and extract it in ELAN's extensions dir
 
 Start ELAN with the provided test audio file
 
