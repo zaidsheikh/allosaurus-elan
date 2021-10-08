@@ -18,6 +18,7 @@ import unicodedata
 import requests
 import json
 import traceback
+from utils.create_dataset import create_dataset_from_eaf
 
 
 # The set of annotations (dicts) parsed out of the given ELAN tier.
@@ -57,6 +58,34 @@ for line in sys.stdin:
     match = re.search(r'<param name="(.*?)".*?>(.*?)</param>', line)
     if match:
         params[match.group(1)] = match.group(2).strip()
+
+
+eaf_for_finetuning = params.get("eaf_for_finetuning", "None")
+if eaf_for_finetuning != "None":
+    print("PROGRESS: 0.1 Generating dataset...", flush = True)
+    tier_name = "Allosaurus" # TODO: should be a user param
+    tmpdirname = tempfile.TemporaryDirectory()
+    print('creating temporary directory', tmpdirname)
+    dataset_dir = os.path.join(tmpdirname.name, "dataset")
+    train_dir = os.path.join(dataset_dir, "train")
+    validate_dir = os.path.join(dataset_dir, "validate")
+    create_dataset_from_eaf(eaf_for_finetuning, train_dir, tier_name)
+    shutil.copytree(train_dir, validate_dir)
+    dataset_archive = shutil.make_archive(dataset_dir, 'zip', dataset_dir)
+    shutil.copytree(tmpdirname.name, tmpdirname.name + "_copy") # TODO: delete this
+    print("PROGRESS: 0.5 Fine-tuning allosaurus...", flush = True)
+    with open(dataset_archive,'rb') as zip_file:
+        files = {'file': zip_file}
+        url = params['server_url'].rstrip('/') + "/annotator/segment/1/annotate/4/"
+        try:
+            allosaurus_params = {"lang": "eng", "epoch": 2}
+            r = requests.post(url, files=files, data={"params": allosaurus_params})
+        except:
+            sys.stderr.write("Error connecting to backend server " + params['server_url'] + "\n")
+            traceback.print_exc()
+        print("Response from CMULAB server " + params['server_url'] + ": " + r.text)
+    print('RESULT: DONE.', flush = True)
+    sys.exit(0)
 
 
 # grab the 'input_tier' parameter, open that

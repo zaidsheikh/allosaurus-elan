@@ -26,6 +26,9 @@
             <textparam level="basic" default="http://rabat.sp.cs.cmu.edu:8088/"
                     info="CMULAB backend server URL">server_url</textparam>
 
+            <input type="auxiliary" optional="true" mimetypes="text/xml" default="None"
+                    info="Upload EAF to fine-tune Allosaurus">eaf_for_finetuning</input>
+
             <output level="basic" type="tier" optional="false"
                     mimetypes="text/xml"
                     info="Output recognized text">output_tier</output>
