@@ -1,2 +1,2 @@
-pympi
 pydub
+pympi-ling
