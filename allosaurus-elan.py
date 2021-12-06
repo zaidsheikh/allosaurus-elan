@@ -19,6 +19,8 @@ import requests
 import json
 import traceback
 from utils.create_dataset import create_dataset_from_eaf
+from credentials import ask_for_authtoken
+import tkinter.messagebox
 
 
 # The set of annotations (dicts) parsed out of the given ELAN tier.
@@ -59,11 +61,26 @@ for line in sys.stdin:
     if match:
         params[match.group(1)] = match.group(2).strip()
 
+lang_code = params.get("lang_code", "eng").strip()
+input_tier = params.get('input_tier', '')
+pretrained_model = params.get("pretrained_model", "eng2102").strip()
 
-eaf_for_finetuning = params.get("eaf_for_finetuning", "None")
-if eaf_for_finetuning != "None":
+print("input_tier: " + input_tier)
+
+server_url = params['server_url'].strip().rstrip('/')
+auth_token = params.get("auth_token", "").strip()
+if not auth_token:
+    auth_token_file = os.path.join(os.path.expanduser("~"), ".allosaurus_elan")
+    if os.path.exists(auth_token_file):
+        with open(auth_token_file) as fin:
+            auth_token = fin.read().strip()
+    else:
+        auth_token = ask_for_authtoken(server_url)
+
+eaf_for_finetuning = params.get("eaf_for_finetuning", "None").strip()
+if eaf_for_finetuning and eaf_for_finetuning != "None":
     print("PROGRESS: 0.1 Generating dataset...", flush = True)
-    tier_name = "Allosaurus" # TODO: should be a user param
+    tier_name = params.get("tier_for_finetuning", "Allosaurus").strip()
     tmpdirname = tempfile.TemporaryDirectory()
     print('creating temporary directory', tmpdirname)
     dataset_dir = os.path.join(tmpdirname.name, "dataset")
@@ -78,8 +95,15 @@ if eaf_for_finetuning != "None":
         files = {'file': zip_file}
         url = params['server_url'].rstrip('/') + "/annotator/segment/1/annotate/4/"
         try:
-            allosaurus_params = {"lang": "eng", "epoch": 2}
-            r = requests.post(url, files=files, data={"params": allosaurus_params})
+            if lang_code == "ipa":
+                tkinter.messagebox.showerror(title="'ipa' lang code not supported",
+                                             message="'ipa' lang code is not supported by allosaurus for fine-tuning!")
+                sys.exit(1)
+            allosaurus_params = {"lang": lang_code, "epoch": 2, "pretrained_model": pretrained_model}
+            headers = {}
+            if params.get('auth_token'):
+                headers["Authorization"] = params["auth_token"].strip()
+            r = requests.post(url, files=files, data={"params": json.dumps(allosaurus_params)}, headers=headers)
         except:
             sys.stderr.write("Error connecting to backend server " + params['server_url'] + "\n")
             traceback.print_exc()
@@ -93,9 +117,9 @@ if eaf_for_finetuning != "None":
 # and values.
 # Note: Tiers for the recognizers are in the AVATech tier format, not EAF
 print("PROGRESS: 0.1 Loading annotations on input tier", flush = True)
-if os.path.exists(params.get('input_tier', '')):
-    with open(params['input_tier'], 'r', encoding = 'utf-8') as input_tier:
-        for line in input_tier:
+if os.path.exists(input_tier):
+    with open(input_tier, 'r', encoding = 'utf-8') as input_tier_file:
+        for line in input_tier_file:
             match = re.search(r'<span start="(.*?)" end="(.*?)"><v>(.*?)</v>', line)
             if match:
                 annotation = { \
@@ -110,7 +134,11 @@ with open(params['source'],'rb') as audio_file:
     files = {'file': audio_file}
     url = params['server_url'].rstrip('/') + "/annotator/segment/1/annotate/2/"
     try:
-        r = requests.post(url, files=files, data={"segments": json.dumps(annotations)})
+        headers = {}
+        if auth_token:
+            headers["Authorization"] = auth_token
+        allosaurus_params = {"lang": lang_code, "model": pretrained_model}
+        r = requests.post(url, files=files, data={"segments": json.dumps(annotations), "params": json.dumps(allosaurus_params)}, headers=headers)
     except:
         sys.stderr.write("Error connecting to backend server " + params['server_url'] + "\n")
         traceback.print_exc()
