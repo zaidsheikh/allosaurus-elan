@@ -1,9 +1,5 @@
 ## [Allosaurus](https://github.com/xinjli/allosaurus/) (universal phone recognizer) extension for [ELAN](https://archive.mpi.nl/tla/elan)
 
-###  Note
-
-This is very early code, still a work-in-progress, let us know if you notice bugs or have any feedback or feature requests.
-
 ### Setup
 
 #### Linux
