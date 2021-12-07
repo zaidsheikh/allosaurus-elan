@@ -48,3 +48,12 @@ If the audio file is long, you can use an existing audio segmenter (for example,
 
 
 This plugin calls Allosaurus running on a remote [CMU Linguistic Annotation Backend](https://github.com/neulab/cmulab) server
+
+### Fine-tune models
+
+The plugin also supports uploading user-corrected phoneme transcriptions in order to fine-tune the pretrained models. After you run the plugin on any audio file, you can make corrections to the generated phoneme trasnscriptions and save it to an eaf file. To fine-tune allosaurus using these corrected transcriptions, open the parameters window and select the eaf file in the "Upload EAF file to fine-tune allosaurus" section:
+
+![allosaurus-elan_params](https://user-images.githubusercontent.com/2358298/144940955-880700ef-bdfb-4721-b935-6684f1f71782.png)
+
+The fields relevant to fine-tuning are highlighted above. Make sure the name of the tier containing the user-corrected transcrptions matches that set in the "Tier name for fine-tuning" field. Currently due to some limitations, only fine-tuning of the "eng2102" pre-trained model is possible. Because the phonesets might differ between different models, it's best to fine-tune a model using transcriptions generated from the same model and lang code.
+
