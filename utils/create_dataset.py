@@ -4,7 +4,10 @@ import pydub
 from pathlib import Path
 
 
-def create_dataset_from_eaf(eaf_file, output_dir, tier_name):
+def create_dataset_from_eaf(eaf_file, output_dir, tier_name="Allosaurus"):
+    print(eaf_file)
+    print(output_dir)
+    print(tier_name)
     output_dir_path = Path(output_dir)
     output_dir_path.mkdir(parents=True, exist_ok=True)
     input_elan = pympi.Elan.Eaf(file_path=eaf_file)
