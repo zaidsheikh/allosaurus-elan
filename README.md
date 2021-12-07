@@ -37,7 +37,7 @@ Start ELAN with the provided test audio file
 `ELAN_6-1/bin/ELAN allosaurus-elan/test/allosaurus.wav &`
 
 Switch to the "Recognizers" tab and then select "Allosaurus Phoneme Recognizer" from the Recognizer dropdown list at the top and then click the "Start" button.
-If this is your first time using the allosaurus-elan plugin, you will be prompted to login to the [CMULAB backend server](https://github.com/neulab/cmulab) and get an access token (free):
+If this is your first time using the allosaurus-elan plugin, you will be prompted to login to the [CMULAB backend server](https://github.com/neulab/cmulab) and get an access token (you can create an account or simply login with an existing Google account):
 
 ![cmulab_login](https://user-images.githubusercontent.com/2358298/144942829-052e3f45-01f2-4f93-8562-2f95b00ec24f.png)
 
@@ -56,5 +56,5 @@ The plugin also supports uploading user-corrected phoneme transcriptions in orde
 
 ![allosaurus-elan_params](https://user-images.githubusercontent.com/2358298/144940955-880700ef-bdfb-4721-b935-6684f1f71782.png)
 
-The fields relevant to fine-tuning are highlighted above. Make sure the name of the tier containing the user-corrected transcrptions matches that set in the "Tier name for fine-tuning" field. Currently due to some limitations, only fine-tuning of the "eng2102" pre-trained model is possible. Because the phonesets might differ between different models, it's best to fine-tune a model using transcriptions generated from the same model and lang code.
+The fields relevant to fine-tuning are highlighted above. Make sure the name of the tier containing the user-corrected transcrptions matches that set in the "Tier name for fine-tuning" field. Currently due to some limitations, only fine-tuning of the "eng2102" pre-trained model is possible. Because the phonesets might differ between different models, it's best to fine-tune a model using transcriptions generated from the same model and lang code. Click on the "Report" button to get the ID of the new model (for example: `eng2102_20211207001022575724`). You can now use this model ID in the "Pretrained model" field (Parameters section) and re-run allosaurus-elan to check if the output from the new model is better.
 
