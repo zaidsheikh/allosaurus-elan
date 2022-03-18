@@ -157,7 +157,8 @@ with open(params['output_tier'], 'w', encoding = 'utf-8') as output_tier:
 
     for annotation in transcribed_annotations:
         output_tier.write('    <span start="%s" end="%s"><v>%s</v></span>\n' %
-                          (annotation['start'], annotation['end'], annotation['transcription']))
+                          (annotation['start'], annotation['end'], annotation['transcription'].replace(' ', '')))
+                          # (annotation['start'], annotation['end'], annotation['transcription'].replace(' ', '\u200b')))
 
     output_tier.write('</TIER>\n')
 
