@@ -23,7 +23,7 @@
                     mimetypes="text/plain"
                     info="Input tier to process">input_tier</input>
 
-            <textparam level="basic" default="http://rabat.sp.cs.cmu.edu:8088/"
+            <textparam level="basic" default="http://miami.lti.cs.cmu.edu:8088/"
                     info="CMULAB backend server URL">server_url</textparam>
 
             <textparam level="basic" default="eng"
@@ -33,10 +33,10 @@
                     info="Pretrained model">pretrained_model</textparam>
 
             <textparam level="basic" default=""
-                    info="Auth token">auth_token</textparam>
-
-            <textparam level="basic" default="Allosaurus"
                     info="Tier name for fine-tuning">tier_for_finetuning</textparam>
+
+            <textparam level="basic" default=""
+                    info="Auth token">auth_token</textparam>
 
             <input type="auxiliary" optional="true" mimetypes="text/xml" default="None"
                     info="Upload EAF to fine-tune Allosaurus">eaf_for_finetuning</input>
