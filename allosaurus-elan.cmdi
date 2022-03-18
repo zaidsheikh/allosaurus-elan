@@ -23,7 +23,7 @@
                     mimetypes="text/plain"
                     info="Input tier to process">input_tier</input>
 
-            <textparam level="basic" default="http://rabat.sp.cs.cmu.edu:8088/"
+            <textparam level="basic" default="http://miami.lti.cs.cmu.edu:8088/"
                     info="CMULAB backend server URL">server_url</textparam>
 
             <textparam level="basic" default="eng"
