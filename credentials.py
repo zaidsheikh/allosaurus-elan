@@ -9,6 +9,17 @@ import webbrowser
 
 auth_token_file = os.path.join(os.path.expanduser("~"), ".allosaurus_elan")
 
+
+def center_window(root, width=300, height=200):
+    # get screen width and height
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    # calculate position x and y coordinates
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
+
 def get_credentials():
     creds = []
     tk = Tk()
@@ -42,6 +53,7 @@ def ask_for_authtoken(server_url):
     b = Button(tk, text='Save', command=lambda:(lambda x:tk.destroy())(authtoken.append(u.get().strip())))
     b.pack()
     u.bind('<Return>', lambda x: b.invoke())
+    center_window(tk)
     tk.mainloop()
     with open(auth_token_file, 'w') as fout:
         fout.write(authtoken[0])

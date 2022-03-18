@@ -33,10 +33,10 @@
                     info="Pretrained model">pretrained_model</textparam>
 
             <textparam level="basic" default=""
-                    info="Auth token">auth_token</textparam>
-
-            <textparam level="basic" default="Allosaurus"
                     info="Tier name for fine-tuning">tier_for_finetuning</textparam>
+
+            <textparam level="basic" default=""
+                    info="Auth token">auth_token</textparam>
 
             <input type="auxiliary" optional="true" mimetypes="text/xml" default="None"
                     info="Upload EAF to fine-tune Allosaurus">eaf_for_finetuning</input>

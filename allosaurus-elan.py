@@ -19,9 +19,9 @@ import requests
 import json
 import traceback
 from utils.create_dataset import create_dataset_from_eaf
-from credentials import ask_for_authtoken
-import tkinter.messagebox
-
+from credentials import ask_for_authtoken, center_window
+import tkinter, tkinter.messagebox
+from tkinter import *
 
 # The set of annotations (dicts) parsed out of the given ELAN tier.
 annotations = []
@@ -53,6 +53,44 @@ def cleanup():
             os.remove(annotation['npy'])
             del(annotation['npy'])
 
+def messagebox(title="", message=""):
+    root = tkinter.Tk()
+    root.overrideredirect(True)
+    root.withdraw()
+    tkinter.messagebox.showinfo(title=title, message=message)
+    root.destroy()
+
+def ask_for_tier_name(title, message):
+    tier_name = []
+    tk = Tk()
+    tk.title(title)
+    link2 = Label(tk, text=message)
+    link2.pack()
+    u = Entry(tk)
+    u.pack()
+    u.focus_set()
+    b = Button(tk, text='OK', command=lambda:(lambda x:tk.destroy())(tier_name.append(u.get().strip())))
+    b.pack()
+    u.bind('<Return>', lambda x: b.invoke())
+    center_window(tk)
+    tk.mainloop()
+    return tier_name[0]
+
+def show_selectable_text(title, label, text):
+    tk = Tk()
+    # tk.geometry("200x200")
+    tk.title(title)
+    link2 = Label(tk, text=label)
+    link2.pack()
+    # w = Text(tk, height=1, borderwidth=0)
+    w = Entry(tk, width=50)
+    w.insert(0, text)
+    w.pack()
+    w.configure(state="readonly")
+    # w.configure(inactiveselectbackground=w.cget("selectbackground"))
+    center_window(tk)
+    tk.mainloop()
+
 
 # Read in all of the parameters that ELAN passes to this local recognizer on
 # standard input.
@@ -80,7 +118,12 @@ if not auth_token:
 eaf_for_finetuning = params.get("eaf_for_finetuning", "None").strip()
 if eaf_for_finetuning and eaf_for_finetuning != "None":
     print("PROGRESS: 0.1 Generating dataset...", flush = True)
-    tier_name = params.get("tier_for_finetuning", "Allosaurus").strip()
+    # tier_name = params.get("tier_for_finetuning", "Allosaurus").strip()
+    tier_name = ask_for_tier_name('Input tier name', "Enter the input tier name for fine-tuning:").strip()
+    if not tier_name:
+        messagebox(title="ERROR", message='No input tier for fine-tuning specified, exiting!')
+        print('RESULT: FAILED.', flush = True)
+        sys.exit(1)
     tmpdirname = tempfile.TemporaryDirectory()
     print('creating temporary directory', tmpdirname)
     dataset_dir = os.path.join(tmpdirname.name, "dataset")
@@ -96,8 +139,8 @@ if eaf_for_finetuning and eaf_for_finetuning != "None":
         url = params['server_url'].rstrip('/') + "/annotator/segment/1/annotate/4/"
         try:
             if lang_code == "ipa":
-                tkinter.messagebox.showerror(title="'ipa' lang code not supported",
-                                             message="'ipa' lang code is not supported by allosaurus for fine-tuning!")
+                messagebox(title="ERROR", message="'ipa' lang code is not supported by allosaurus for fine-tuning!")
+                print('RESULT: FAILED.', flush = True)
                 sys.exit(1)
             allosaurus_params = {"lang": lang_code, "epoch": 2, "pretrained_model": pretrained_model}
             headers = {}
@@ -105,9 +148,20 @@ if eaf_for_finetuning and eaf_for_finetuning != "None":
                 headers["Authorization"] = params["auth_token"].strip()
             r = requests.post(url, files=files, data={"params": json.dumps(allosaurus_params)}, headers=headers)
         except:
-            sys.stderr.write("Error connecting to backend server " + params['server_url'] + "\n")
+            err_msg = "Error connecting to CMULAB server " + params['server_url']
+            sys.stderr.write(err_msg + "\n")
             traceback.print_exc()
+            messagebox(title="ERROR", message=err_msg)
+            print('RESULT: FAILED.', flush = True)
+            sys.exit(1)
         print("Response from CMULAB server " + params['server_url'] + ": " + r.text)
+        if not r.ok:
+            messagebox(title="ERROR", message="Server error, click the report button to view logs.")
+            print('RESULT: FAILED.', flush = True)
+            sys.exit(1)
+        json_response = json.loads(r.text)
+        model_id = json_response[0]["new_model_id"]
+        show_selectable_text(title="New model ID", label="Fine-tuned model ID:", text=model_id)
     print('RESULT: DONE.', flush = True)
     sys.exit(0)
 
@@ -140,9 +194,17 @@ with open(params['source'],'rb') as audio_file:
         allosaurus_params = {"lang": lang_code, "model": pretrained_model}
         r = requests.post(url, files=files, data={"segments": json.dumps(annotations), "params": json.dumps(allosaurus_params)}, headers=headers)
     except:
-        sys.stderr.write("Error connecting to backend server " + params['server_url'] + "\n")
+        err_msg = "Error connecting to CMULAB server " + params['server_url']
+        sys.stderr.write(err_msg + "\n")
         traceback.print_exc()
+        messagebox(title="ERROR", message=err_msg)
+        print('RESULT: FAILED.', flush = True)
+        sys.exit(1)
     print("Response from CMULAB server " + params['server_url'] + ": " + r.text)
+    if not r.ok:
+        messagebox(title="ERROR", message="Server error, click the report button to view logs.")
+        print('RESULT: FAILED.', flush = True)
+        sys.exit(1)
     transcribed_annotations = json.loads(r.text)
 
 # Then open 'output_tier' for writing, and return all of the new phoneme
