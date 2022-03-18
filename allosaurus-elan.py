@@ -117,6 +117,10 @@ if not auth_token:
 
 eaf_for_finetuning = params.get("eaf_for_finetuning", "None").strip()
 if eaf_for_finetuning and eaf_for_finetuning != "None":
+    if lang_code == "ipa":
+        messagebox(title="ERROR", message="'ipa' lang code is not supported by allosaurus for fine-tuning!")
+        print('RESULT: FAILED.', flush = True)
+        sys.exit(1)
     print("PROGRESS: 0.1 Generating dataset...", flush = True)
     # tier_name = params.get("tier_for_finetuning", "Allosaurus").strip()
     tier_name = ask_for_tier_name('Input tier name', "Enter the input tier name for fine-tuning:").strip()
@@ -138,10 +142,6 @@ if eaf_for_finetuning and eaf_for_finetuning != "None":
         files = {'file': zip_file}
         url = params['server_url'].rstrip('/') + "/annotator/segment/1/annotate/4/"
         try:
-            if lang_code == "ipa":
-                messagebox(title="ERROR", message="'ipa' lang code is not supported by allosaurus for fine-tuning!")
-                print('RESULT: FAILED.', flush = True)
-                sys.exit(1)
             allosaurus_params = {"lang": lang_code, "epoch": 2, "pretrained_model": pretrained_model}
             headers = {}
             if params.get('auth_token'):

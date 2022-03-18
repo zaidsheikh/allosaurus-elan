@@ -32,8 +32,8 @@
             <textparam level="basic" default="eng2102"
                     info="Pretrained model">pretrained_model</textparam>
 
-            <textparam level="basic" default=""
-                    info="Tier name for fine-tuning">tier_for_finetuning</textparam>
+            <!--<textparam level="basic" default=""-->
+                    <!--info="Tier name for fine-tuning">tier_for_finetuning</textparam>-->
 
             <textparam level="basic" default=""
                     info="Auth token">auth_token</textparam>
